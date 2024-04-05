@@ -59,7 +59,6 @@ public class main extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMaximumSize(new java.awt.Dimension(800, 600));
         setName("Main"); // NOI18N
-        setPreferredSize(new java.awt.Dimension(800, 600));
         setResizable(false);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
@@ -175,21 +174,30 @@ public class main extends javax.swing.JFrame {
     private void btnSalvarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSalvarActionPerformed
         // TODO add your handling code here:
         save(acao);
+        apagarDados();
+        habilitarInfos(false);
         imprimeNaTela();
     }//GEN-LAST:event_btnSalvarActionPerformed
 
     private void btnExcluirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExcluirActionPerformed
         // TODO add your handling code here:
+        habilitarBusca(true);
+        acao = "Excluindo";
     }//GEN-LAST:event_btnExcluirActionPerformed
 
     private void btnCancelarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelarActionPerformed
         // TODO add your handling code here:
+        habilitarInfos(false);
+        habilitarBusca(false);
+        apagarDados();
+        acao = "Novo";
     }//GEN-LAST:event_btnCancelarActionPerformed
 
     private void btnEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditarActionPerformed
         // TODO add your handling code here:
         habilitarBusca(true);
         habilitarInfos(false);
+        acao = "Editando";
     }//GEN-LAST:event_btnEditarActionPerformed
 
     private void btnNovoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNovoActionPerformed
@@ -201,11 +209,24 @@ public class main extends javax.swing.JFrame {
     }//GEN-LAST:event_btnNovoActionPerformed
 
     private void btnFindActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFindActionPerformed
-        if(animalBuscado(edtFind.getText()) != null){
-            habilitarBusca(false);
-             habilitarInfos(true);
-             acao = "Editando";
-        }        
+        if (animalBuscado(edtFind.getText()) != null) {
+
+            if (acao.equals("Editando")) {
+                habilitarBusca(false);
+                habilitarInfos(true);
+                preencheDados();
+            } else {
+                apagarCadastro();
+                contador--;
+                if (animais.getAnimais().size() == 0) {
+                    txtSalvos.setText("");
+                }
+                apagarDados();
+                habilitarInfos(false);
+                habilitarBusca(false);
+                acao = "Novo";
+            }
+        }
     }//GEN-LAST:event_btnFindActionPerformed
 
     /**
@@ -285,19 +306,22 @@ public class main extends javax.swing.JFrame {
         lblEspecie.setVisible(estado);
         lblRaca.setVisible(estado);
         lblIdade.setVisible(estado);
-        lblPeso.setVisible(estado);        
+        lblPeso.setVisible(estado);
     }
-    
-    public void apagarDados(){
+
+    public void apagarDados() {
         edtNome.setText("");
         edtEspecie.setText("");
         edtRaca.setText("");
         edtIdade.setText("");
         edtPeso.setText("");
+        edtFind.setText("");
     }
 
     public Animal campoDoObjeto() {
-        contador++;
+        if (acao.equals("Novo")) {
+            contador++;
+        }
         String nome = edtNome.getText();
         String especie = edtEspecie.getText();
         String raca = edtRaca.getText();
@@ -306,44 +330,56 @@ public class main extends javax.swing.JFrame {
 
         int idade = Integer.parseInt(idadeStr);
         double peso = Double.parseDouble(pesoStr);
-        
+
         Animal anim = new Animal(contador, nome, especie, raca, idade, peso);
 
         return anim;
     }
-    
-    public Animal animalBuscado(String nomeBuscado){
-        for(Animal anim : animais.getAnimais()){
-            if(nomeBuscado.equals(anim.getNome())){
+
+    public Animal animalBuscado(String nomeBuscado) {
+        for (Animal anim : animais.getAnimais()) {
+            if (nomeBuscado.equals(anim.getNome())) {
                 return anim;
             }
         }
         return null;
     }
-    
-    public void editarAnimal(){        
+
+    public void editarAnimal() {
         animais.Editar(animalBuscado(edtFind.getText()), campoDoObjeto());
     }
-    
-    public void habilitarBusca(boolean flag){
+
+    public void habilitarBusca(boolean flag) {
         edtFind.setVisible(flag);
         lblBusca.setVisible(flag);
         btnFind.setVisible(flag);
     }
- 
-    
-    public void save(String modo){
-        if(modo.equals("Novo")){
+
+    public void save(String modo) {
+        if (modo.equals("Novo")) {
             animais.addAnimal(campoDoObjeto());
         }
-        
-        if(modo.equals("Editando")){
+
+        if (modo.equals("Editando")) {
             editarAnimal();
         }
+
     }
 
     public void imprimeNaTela() {
         txtSalvos.setText(animais.imprimirAnimais());
+    }
+
+    public void preencheDados() {
+        edtNome.setText(animalBuscado(edtFind.getText()).getNome());
+        edtEspecie.setText(animalBuscado(edtFind.getText()).getEspecie());
+        edtRaca.setText(animalBuscado(edtFind.getText()).getRaca());
+        edtIdade.setText(String.valueOf(animalBuscado(edtFind.getText()).getIdade()));
+        edtPeso.setText(String.valueOf(animalBuscado(edtFind.getText()).getPeso()));
+    }
+
+    public void apagarCadastro() {
+        animais.getAnimais().remove(animalBuscado(edtFind.getText()));
     }
 
 }
